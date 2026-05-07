@@ -1,5 +1,5 @@
 const sqlite = require('sqlite3').verbose();
-const database = new sqlite.Database('.databas/databas.db');
+const database = new sqlite.Database('./databas/databas.db');
 
 database.run(`
   CREATE TABLE IF NOT EXISTS users (

@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const database = require('./databas/databas.js');
+const database = require('../databas/databas.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authToken = require('./middleware/middleware.js');
 
 router.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
-    const hashedPassword = await bcrypt.hashSync(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
     database.run(
         "INSERT INTO users (username, password) VALUES (?, ?)",
@@ -32,16 +33,16 @@ router.post('/login', (req, res) => {
                 return res.status(400).json({error: "Felaktigt användarnamn eller lösenord"});
             }
 
-            const isPasswordValid = await bcrypt.compareSync(password, user.password);
+            const isPasswordValid = bcrypt.compareSync(password, user.password);
             if (!isPasswordValid) {
                 return res.status(400).json({error: "Felaktigt användarnamn eller lösenord"});
             }
 
-            const token = jwt.sign({
-                id: user.id,
-                username: user.username,
-                'hemlig-nyckel': 'hemlig-nyckel'
-            }, 'hemlig-nyckel')
+            const token = jwt.sign(
+                { id: user.id, username: user.username },
+                'hemlig-nyckel',
+                { expiresIn: '24h' }
+            );
 
             res.json({token});
         }
